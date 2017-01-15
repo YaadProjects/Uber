@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Uber</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="uberLogoDescription">Uber Logo</string>
+    <string name="riderSwitchSelect">Rider</string>
+    <string name="userTypeSwitch">Switch</string>
+    <string name="driverSwitchSelect">Driver</string>
+    <string name="getStartedButton">Get Started</string>
+    <string name="switchOffText">Rider</string>
+    <string name="switchOnText">Driver</string>
+
+
+</resources>

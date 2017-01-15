@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.tricloudcommunications.ce.uber.MainActivity"
+    tools:showIn="@layout/activity_main">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/uberLogoImageView"
+        android:contentDescription="@string/uberLogoDescription"
+        app:srcCompat="@drawable/uber_logo"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="158dp"
+        android:id="@+id/typeUserSwitch"
+        android:textSize="24sp"
+        android:layout_below="@+id/uberLogoImageView"
+        android:layout_centerHorizontal="true"
+        android:textOn="@string/switchOnText"
+        android:textOff="@string/switchOffText" />
+
+    <TextView
+        android:text="@string/riderSwitchSelect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/riderTextView"
+        android:textSize="34sp"
+        android:layout_marginEnd="23dp"
+        android:layout_alignBaseline="@+id/typeUserSwitch"
+        android:layout_alignBottom="@+id/typeUserSwitch"
+        android:layout_toStartOf="@+id/typeUserSwitch" />
+
+    <TextView
+        android:text="@string/driverSwitchSelect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/driverTextView"
+        android:textSize="34sp"
+        android:layout_marginStart="23dp"
+        android:layout_alignBaseline="@+id/typeUserSwitch"
+        android:layout_alignBottom="@+id/typeUserSwitch"
+        android:layout_toEndOf="@+id/typeUserSwitch" />
+
+    <Button
+        android:text="@string/getStartedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/getStartedButton"
+        android:textSize="34sp"
+        android:layout_marginTop="102dp"
+        android:textAllCaps="false"
+        android:layout_below="@+id/driverTextView"
+        android:layout_alignStart="@+id/uberLogoImageView" />
+</RelativeLayout>

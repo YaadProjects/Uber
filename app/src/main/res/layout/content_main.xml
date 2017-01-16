@@ -63,6 +63,7 @@
         android:textSize="34sp"
         android:layout_marginTop="102dp"
         android:textAllCaps="false"
-        android:layout_below="@+id/driverTextView"
-        android:layout_alignStart="@+id/uberLogoImageView" />
+        android:layout_below="@+id/riderTextView"
+        android:layout_centerHorizontal="true"
+        android:onClick="getStarted" />
 </RelativeLayout>

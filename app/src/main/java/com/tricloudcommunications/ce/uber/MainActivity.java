@@ -6,6 +6,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
@@ -17,6 +18,12 @@ import com.parse.ParseAnalytics;
 public class MainActivity extends AppCompatActivity {
 
     Switch typeUserSwitch;
+
+    public void getStarted(View view){
+
+
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +46,6 @@ public class MainActivity extends AppCompatActivity {
             Log.i("Switch Status", typeUserSwitch.getTextOff().toString());
 
         }
-
-
 
         typeUserSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

@@ -13,16 +13,29 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 
 import com.onesignal.OneSignal;
+import com.parse.LogInCallback;
 import com.parse.ParseAnalytics;
+import com.parse.ParseAnonymousUtils;
+import com.parse.ParseException;
+import com.parse.ParseUser;
 
 public class MainActivity extends AppCompatActivity {
 
-    Switch typeUserSwitch;
+    Switch userTypeSwitch;
 
     public void getStarted(View view){
 
+        String userType = "";
 
+        if (userTypeSwitch.isChecked()){
+            Log.i("Switch Status", userTypeSwitch.getTextOn().toString());
 
+        }else {
+            Log.i("Switch Status", userTypeSwitch.getTextOff().toString());
+
+        }
+
+        Log.i("Switch Status", String.valueOf(userTypeSwitch.isChecked()));
     }
 
     @Override
@@ -38,16 +51,26 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        typeUserSwitch = (Switch) findViewById(R.id.typeUserSwitch);
-        if (typeUserSwitch.isChecked()){
-            Log.i("Switch Status", typeUserSwitch.getTextOn().toString());
+        userTypeSwitch = (Switch) findViewById(R.id.userTypeSwitch);
 
-        }else {
-            Log.i("Switch Status", typeUserSwitch.getTextOff().toString());
+        if (ParseUser.getCurrentUser() == null){
 
+            ParseAnonymousUtils.logIn(new LogInCallback() {
+                @Override
+                public void done(ParseUser user, ParseException e) {
+
+                    if (e == null){
+
+                        Log.i("info", "Anonymous login successful");
+                    }else {
+
+                        Log.i("info", "Anonymous login failed");
+                    }
+                }
+            });
         }
 
-        typeUserSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        userTypeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 

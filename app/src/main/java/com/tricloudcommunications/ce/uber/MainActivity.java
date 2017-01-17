@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+
         Log.i("Switch Status", String.valueOf(userTypeSwitch.isChecked()));
     }
 
@@ -44,8 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
         // remove Action/Title Bar and makes full screen
         //Source http://stackoverflow.com/questions/2862528/how-to-hide-app-title-in-android
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);

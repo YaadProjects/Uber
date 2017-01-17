@@ -22,21 +22,23 @@ import com.parse.ParseUser;
 public class MainActivity extends AppCompatActivity {
 
     Switch userTypeSwitch;
+    String userType = "";
 
     public void getStarted(View view){
 
-        String userType = "";
-
         if (userTypeSwitch.isChecked()){
+
+            userType = String.valueOf(userTypeSwitch.getTextOn());
             Log.i("Switch Status", userTypeSwitch.getTextOn().toString());
 
         }else {
-            Log.i("Switch Status", userTypeSwitch.getTextOff().toString());
 
+            userType = String.valueOf(userTypeSwitch.getTextOff());
+            Log.i("Switch Status", userTypeSwitch.getTextOff().toString());
         }
 
-
-        Log.i("Switch Status", String.valueOf(userTypeSwitch.isChecked()));
+        ParseUser.getCurrentUser().put("userType", userType);
+        Log.i("info", "Redirecting as: " + userType);
     }
 
     @Override
@@ -65,10 +67,18 @@ public class MainActivity extends AppCompatActivity {
                         Log.i("info", "Anonymous login successful");
                     }else {
 
-                        Log.i("info", "Anonymous login failed");
+                        Log.i("info", "Anonymous login failed: " + e.toString());
                     }
                 }
             });
+        }else {
+
+            if (ParseUser.getCurrentUser().get("userType") != null){
+
+                Log.i("Info", "Already Logged in Redirecting as: " + ParseUser.getCurrentUser().get("userType"));
+
+            }
+
         }
 
         userTypeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

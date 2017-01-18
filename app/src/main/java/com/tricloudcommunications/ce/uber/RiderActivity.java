@@ -25,6 +25,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -94,9 +95,8 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
 
         try {
             if (location != null) {
+
                 onLocationChanged(location);
-
-
             }
         } catch (Exception e) {
 
@@ -113,6 +113,9 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
         Double lat = location.getLatitude();
         Double lng = location.getLongitude();
 
+        LatLngBounds latLngBounds = new LatLngBounds(new LatLng(lat, lng), new LatLng(lat, lng));
+
+
         Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
 
         try {
@@ -121,9 +124,16 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
 
             if (addressList !=null && addressList.size() > 0){
 
+                /** Note:
+                 //Sources: https://developers.google.com/maps/documentation/android-api/views
+                 //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 0));
+                //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng), 18));
+                //LatLngBounds is needed to avoid have partial map show instead of complete map
+                 **/
+
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions().position(new LatLng(lat,lng)).title(addressList.get(0).getAddressLine(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng), 18));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 15));
                 mMap.addCircle(new CircleOptions().center(new LatLng(lat,lng)).radius(10).strokeColor(Color.RED).fillColor(Color.BLUE));
 
                 Log.i("Address Info 0", addressList.get(0).getAddressLine(0));

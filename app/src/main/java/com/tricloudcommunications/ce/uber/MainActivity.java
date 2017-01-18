@@ -1,5 +1,6 @@
 package com.tricloudcommunications.ce.uber;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -24,6 +25,16 @@ public class MainActivity extends AppCompatActivity {
     Switch userTypeSwitch;
     String userType = "";
 
+    public void redirectActivity(){
+
+        if (ParseUser.getCurrentUser().get("userType") == "Rider"){
+
+            Intent intent = new Intent(getApplicationContext(), RiderActivity.class);
+            startActivity(intent);
+        }
+
+    }
+
     public void getStarted(View view){
 
         if (userTypeSwitch.isChecked()){
@@ -38,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         ParseUser.getCurrentUser().put("userType", userType);
+        redirectActivity();
         Log.i("info", "Redirecting as: " + userType);
     }
 
@@ -75,19 +87,13 @@ public class MainActivity extends AppCompatActivity {
 
             if (ParseUser.getCurrentUser().get("userType") != null){
 
+                redirectActivity();
                 Log.i("Info", "Already Logged in Redirecting as: " + ParseUser.getCurrentUser().get("userType"));
 
             }
 
         }
 
-        userTypeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
-                Log.i("Switch Status", Boolean.toString(isChecked));
-            }
-        });
 
 
         //Initialize Parse

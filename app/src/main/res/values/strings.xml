@@ -9,6 +9,7 @@
     <string name="getStartedButton">Get Started</string>
     <string name="switchOffText">Rider</string>
     <string name="switchOnText">Driver</string>
+    <string name="title_activity_rider">Map</string>
 
 
 </resources>

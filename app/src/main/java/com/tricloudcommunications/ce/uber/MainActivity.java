@@ -19,38 +19,51 @@ import com.parse.ParseAnalytics;
 import com.parse.ParseAnonymousUtils;
 import com.parse.ParseException;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 public class MainActivity extends AppCompatActivity {
 
     Switch userTypeSwitch;
     String userType = "";
 
-    public void redirectActivity(){
-
-        if (ParseUser.getCurrentUser().get("userType") == "Rider"){
-
-            Intent intent = new Intent(getApplicationContext(), RiderActivity.class);
-            startActivity(intent);
-        }
-
-    }
-
     public void getStarted(View view){
 
         if (userTypeSwitch.isChecked()){
 
             userType = String.valueOf(userTypeSwitch.getTextOn());
-            Log.i("Switch Status", userTypeSwitch.getTextOn().toString());
+            Log.i("Info Switch Status", userTypeSwitch.getTextOn().toString());
 
         }else {
 
             userType = String.valueOf(userTypeSwitch.getTextOff());
-            Log.i("Switch Status", userTypeSwitch.getTextOff().toString());
+            Log.i("Info Switch Status", userTypeSwitch.getTextOff().toString());
         }
 
         ParseUser.getCurrentUser().put("userType", userType);
-        redirectActivity();
-        Log.i("info", "Redirecting as: " + userType);
+        ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+
+                if (e == null){
+
+                    redirectActivity();
+                    Log.i("info", "Redirecting as: " + userType);
+                }
+
+            }
+        });
+
+    }
+
+    public void redirectActivity(){
+
+        if (ParseUser.getCurrentUser().get("userType").equals("Rider")){
+
+            Intent intent = new Intent(getApplicationContext(), RiderActivity.class);
+            startActivity(intent);
+            Log.i("Info: redirectActivity", "The user type is: " +  ParseUser.getCurrentUser().get("userType"));
+        }
+
     }
 
     @Override
@@ -93,7 +106,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
-
 
 
         //Initialize Parse

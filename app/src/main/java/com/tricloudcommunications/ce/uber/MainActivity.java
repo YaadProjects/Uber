@@ -62,6 +62,13 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(getApplicationContext(), RiderActivity.class);
             startActivity(intent);
             Log.i("Info: redirectActivity", "The user type is: " +  ParseUser.getCurrentUser().get("userType"));
+
+        }else{
+
+            Intent intent = new Intent(getApplicationContext(), ViewRequestActivity.class);
+            startActivity(intent);
+            Log.i("Info: redirectActivity", "The user type is: " +  ParseUser.getCurrentUser().get("userType"));
+
         }
 
     }

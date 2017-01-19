@@ -10,6 +10,9 @@
     <string name="switchOffText">Rider</string>
     <string name="switchOnText">Driver</string>
     <string name="title_activity_rider">Map</string>
+    <string name="callUberButton">Call An Uber</string>
+    <string name="title_activity_view_request">ViewRequestActivity</string>
+    <string name="riderLogOutButton">Log out</string>
 
 
 </resources>

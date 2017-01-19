@@ -7,12 +7,27 @@
     tools:showIn="@layout/activity_rider">
 
     <Button
-        android:text="Button"
+        android:text="@string/callUberButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="21dp"
+        android:layout_marginBottom="45dp"
+        android:id="@+id/callUberButton"
+        android:onClick="callUber"
+        android:textSize="24sp"
+        android:textAllCaps="false"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:text="@string/riderLogOutButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="11dp"
+        android:id="@+id/riderLogOutButton"
+        android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="78dp"
-        android:layout_marginBottom="46dp"
-        android:id="@+id/button2" />
+        android:layout_marginEnd="10dp"
+        android:textSize="18sp"
+        android:onClick="riderLogOut" />
 </RelativeLayout>

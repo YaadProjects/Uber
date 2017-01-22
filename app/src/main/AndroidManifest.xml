@@ -102,7 +102,12 @@
         <activity
             android:name=".ViewRequestActivity"
             android:label="@string/title_activity_view_request"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".DriverLocationActivity"
+            android:label="@string/title_activity_driver_location">
+
+        </activity>
     </application>
 
 </manifest>

@@ -2,6 +2,7 @@ package com.tricloudcommunications.ce.uber;
 
 import android.*;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Criteria;
@@ -14,16 +15,21 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,16 +47,24 @@ public class ViewRequestActivity extends AppCompatActivity implements LocationLi
     ArrayList<String> requests;
     ArrayAdapter arrayAdapter;
 
+    ArrayList<String> riderUserNames;
+
+    ArrayList<Double> requestLatitudes = new ArrayList<Double>();
+    ArrayList<Double> requestLongitude = new ArrayList<Double>();
+
     public void updateListView(Location requestLocations){
 
         if (requestLocations != null) {
 
-            requests.clear();
+            final ParseGeoPoint geoPointLocation = new ParseGeoPoint(requestLocations.getLatitude(), requestLocations.getLongitude());
+
+            ParseUser.getCurrentUser().put("location", geoPointLocation);
+            ParseUser.getCurrentUser().saveInBackground();
 
             ParseQuery<ParseObject> query = ParseQuery.getQuery("Request");
-
-            final ParseGeoPoint geopointLocation = new ParseGeoPoint(requestLocations.getLatitude(), requestLocations.getLongitude());
-            query.whereNear("location", geopointLocation);
+            query.whereNear("location", geoPointLocation);
+            //query.whereDoesNotExist("driverUsername");
+            query.whereEqualTo("driverUsername", "");
             query.setLimit(10);
             query.findInBackground(new FindCallback<ParseObject>() {
                 @Override
@@ -58,32 +72,42 @@ public class ViewRequestActivity extends AppCompatActivity implements LocationLi
 
                     if (e == null){
 
+                        requests.clear();
+                        requestLatitudes.clear();
+                        requestLongitude.clear();
+
                         if (objects.size() > 0){
 
                             for (ParseObject object : objects){
 
-                                Double distanceInMiles = geopointLocation.distanceInMilesTo((ParseGeoPoint) object.get("location"));
+                                ParseGeoPoint riderRequestLocations = (ParseGeoPoint) object.get("location");
 
-                                //Rounding to one decimal place
-                                Double distanceoneDP = (double) Math.round(distanceInMiles * 10) / 10;
+                                if (riderRequestLocations !=null) {
+                                    Double distanceInMiles = geoPointLocation.distanceInMilesTo(riderRequestLocations);
 
-                                requests.add(distanceoneDP.toString() + " miles");
+                                    //Rounding to one decimal place
+                                    Double distanceOneDP = (double) Math.round(distanceInMiles * 10) / 10;
 
+                                    requests.add(distanceOneDP.toString() + " miles");
+
+                                    requestLatitudes.add(riderRequestLocations.getLatitude());
+                                    requestLongitude.add(riderRequestLocations.getLongitude());
+
+                                    riderUserNames.add(object.getString("username"));
+
+                                    Log.i("info", "list updated from Method");
+                                }
                             }
 
                         }else {
 
                             requests.add("No active request nearby...");
-
                         }
 
                         arrayAdapter.notifyDataSetChanged();
                     }
-
                 }
             });
-
-
 
         }
 
@@ -95,15 +119,17 @@ public class ViewRequestActivity extends AppCompatActivity implements LocationLi
         setContentView(R.layout.activity_view_request);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        setTitle("Neaby Requests");
 
         requestListView = (ListView) findViewById(R.id.requestListView);
+        riderUserNames = new ArrayList<String>();
         requests = new ArrayList<String>();
         arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, requests);
         requestListView.setAdapter(arrayAdapter);
         requests.clear();
-        requests.add("Getting nearby requests...");
-
-
+        requestLatitudes.clear();
+        requestLongitude.clear();
+        //requests.add("Getting nearby requests...");
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         provider = locationManager.getBestProvider(new Criteria(), false);
@@ -122,12 +148,98 @@ public class ViewRequestActivity extends AppCompatActivity implements LocationLi
 
         updateListView(location);
 
+        requestListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                if (requestLatitudes.size() > position && requestLongitude.size() > position && riderUserNames.size() > position && location != null){
+
+                    Intent intent = new Intent(getApplicationContext(), DriverLocationActivity.class);
+                    intent.putExtra("riderLatitude", requestLatitudes.get(position));
+                    intent.putExtra("riderLongitude", requestLongitude.get(position));
+                    intent.putExtra("driverLatitude", location.getLatitude());
+                    intent.putExtra("driverLongitude", location.getLongitude());
+                    intent.putExtra("riderUserName", riderUserNames.get(position));
+                    startActivityForResult(intent, 1);
+
+                }
+
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            // refresh list upon return
+            updateListView(location);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.view_request_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.view_request_action_settings) {
+
+            ParseQuery<ParseUser> query = ParseUser.getQuery();
+            query.whereEqualTo("username", ParseUser.getCurrentUser().getUsername());
+            query.findInBackground(new FindCallback<ParseUser>() {
+                @Override
+                public void done(List<ParseUser> objects, ParseException e) {
+
+                    if (e == null){
+
+                        if (objects.size() >0){
+
+                            for (ParseUser object : objects){
+
+                                object.deleteInBackground(new DeleteCallback() {
+                                    @Override
+                                    public void done(ParseException e) {
+
+                                        if (e == null){
+
+                                            ParseUser.logOut();
+                                            Intent intent = new Intent(ViewRequestActivity.this, MainActivity.class);
+                                            startActivity(intent);
+
+                                        }else {
+
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                });
+                            }
+                        }
+
+                    }else {
+
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onLocationChanged(Location location) {
 
-        /**
         Double lat = location.getLatitude();
         Double lng = location.getLongitude();
 
@@ -152,12 +264,14 @@ public class ViewRequestActivity extends AppCompatActivity implements LocationLi
             e.printStackTrace();
         }
 
-        Log.i("Latitude", lat.toString());
-        Log.i("Longitude", lng.toString());
-        **/
+        Log.i("Driver Latitude", lat.toString());
+        Log.i("Driver Longitude", lng.toString());
 
+        //requests.clear();
+        //requestLatitudes.clear();
+        //requestLongitude.clear();
         updateListView(location);
-
+        Log.i("info", "list updated fron onLocationChanged");
 
     }
 
@@ -175,7 +289,7 @@ public class ViewRequestActivity extends AppCompatActivity implements LocationLi
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        locationManager.requestLocationUpdates(provider, 400, 1, this);
+        locationManager.requestLocationUpdates(provider, 400, 0, this);
     }
 
     @Override

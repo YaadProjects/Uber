@@ -29,6 +29,7 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
@@ -55,9 +56,68 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
 
     public void riderLogOut(View view){
 
-        ParseUser.logOut();
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+        //Check to see if a request has been put for the current user and delete the request
+        ParseQuery<ParseObject> queryRequest = new ParseQuery<ParseObject>("Request");
+        queryRequest.whereEqualTo("username", ParseUser.getCurrentUser().getUsername());
+        queryRequest.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> objects, ParseException e) {
+
+                if (e == null){
+
+                    if (objects.size() >0){
+
+                        for (ParseObject object : objects){
+
+                            object.deleteInBackground();
+                        }
+
+                    }
+                }else {
+
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        //After deleting any requests, delete the user and the logout to delete the session
+        ParseQuery<ParseUser> queryUser = ParseUser.getQuery();
+        queryUser.whereEqualTo("username", ParseUser.getCurrentUser().getUsername());
+        queryUser.findInBackground(new FindCallback<ParseUser>() {
+            @Override
+            public void done(List<ParseUser> objects, ParseException e) {
+
+                if (e == null){
+
+                    if (objects.size() > 0){
+
+                        for (ParseObject object : objects){
+
+                            object.deleteInBackground(new DeleteCallback() {
+                                @Override
+                                public void done(ParseException e) {
+
+                                    if (e == null){
+
+                                        ParseUser.logOut();
+                                        Intent intent = new Intent(RiderActivity.this, MainActivity.class);
+                                        startActivity(intent);
+
+                                    }else {
+
+                                        Log.i("info", e.toString());
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                }else {
+
+                    Log.i("info", e.toString());
+                }
+            }
+        });
 
     }
 
@@ -93,7 +153,6 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
                             for (ParseObject object : objects){
 
                                 object.deleteInBackground();
-
                             }
 
                             requestActive = false;
@@ -106,7 +165,6 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
                 }
             });
 
-
         }else {
             if (location != null) {
 
@@ -114,6 +172,7 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
                 ParseObject request = new ParseObject("Request");
 
                 request.put("username", ParseUser.getCurrentUser().getUsername());
+                request.put("driverUsername", "");
 
                 ParseGeoPoint parseGeoPoint = new ParseGeoPoint(location.getLatitude(), location.getLongitude());
 
@@ -127,7 +186,6 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
 
                             requestActive = true;
                             callUberButton.setText("Cancel Uber");
-
                         }
                     }
                 });
@@ -188,7 +246,6 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
         location = locationManager.getLastKnownLocation(provider);
 
     }
-
 
     /**
      * Manipulates the map once available.

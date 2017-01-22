@@ -29,18 +29,17 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-
     /**
      * Source: http://stackoverflow.com/a/34834772/5047666
      * The condition noted below is primarly due to the Google Map Activity used in this project.
      * The commented out line of code below will generate this error:
      * Error:Execution failed for task ':app:processDebugGoogleServices'.
-     *> Please fix the version conflict either by updating the version of
+     * > Please fix the version conflict either by updating the version of
      the google-services plugin (information about the latest version is
      available at https://bintray.com/android/android-tools/com.google.gms.google-services/)
      or updating the version of com.google.android.gms to 9.0.0.
      //apply plugin: 'com.google.gms.google-services'
-    **/
+     **/
 
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:design:24.2.1'

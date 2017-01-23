@@ -12,12 +12,14 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -52,7 +54,40 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
     String provider;
     Location location;
     Button callUberButton;
+    TextView riderInfoTextView;
     Boolean requestActive = false;
+    Handler handler;
+
+    public void checkForUpdates(){
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Request");
+        query.whereEqualTo("username", ParseUser.getCurrentUser().getUsername());
+        query.whereNotEqualTo("driverUsername", "");
+
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> objects, ParseException e) {
+
+                if (e == null && objects.size() > 0){
+
+                    riderInfoTextView.setText("Your driver is on the way!");
+                    callUberButton.setVisibility(View.INVISIBLE);
+
+                }
+
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        checkForUpdates();
+
+                    }
+                }, 2000);
+
+            }
+        });
+
+    }
 
     public void riderLogOut(View view){
 
@@ -186,6 +221,8 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
 
                             requestActive = true;
                             callUberButton.setText("Cancel Uber");
+
+                            checkForUpdates();
                         }
                     }
                 });
@@ -207,6 +244,9 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         callUberButton = (Button) findViewById(R.id.callUberButton);
+        riderInfoTextView = (TextView) findViewById(R.id.infoTextView);
+        handler = new Handler();
+
 
         //Check to see if a request has been put for the current user
         ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("Request");
@@ -221,6 +261,9 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
 
                         requestActive = true;
                         callUberButton.setText("Cancel Uber");
+
+                        checkForUpdates();
+
                     }
                 }else {
 

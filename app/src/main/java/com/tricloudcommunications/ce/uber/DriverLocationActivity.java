@@ -48,6 +48,7 @@ public class DriverLocationActivity extends FragmentActivity implements OnMapRea
     private GoogleMap mMap;
 
     Intent intent;
+    RelativeLayout mapLayout;
 
     public void acceptRequest(View view){
 
@@ -100,6 +101,10 @@ public class DriverLocationActivity extends FragmentActivity implements OnMapRea
 
         intent = getIntent();
 
+        mapLayout = (RelativeLayout)findViewById(R.id.mapRelativeLayout);
+
+
+
     }
 
 
@@ -116,22 +121,29 @@ public class DriverLocationActivity extends FragmentActivity implements OnMapRea
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        LatLng driverLocation = new LatLng(intent.getDoubleExtra("driverLatitude", 0), intent.getDoubleExtra("driverLongitude", 0));
-        LatLng requestLocation = new LatLng(intent.getDoubleExtra("riderLatitude", 0), intent.getDoubleExtra("riderLongitude", 0));
+        mapLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                //and write code, which you can see in answer above
 
-        ArrayList<Marker> markers = new ArrayList<>();
-        markers.add(mMap.addMarker(new MarkerOptions().position(driverLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))));
-        markers.add(mMap.addMarker(new MarkerOptions().position(requestLocation).title("Request Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))));
+                LatLng driverLocation = new LatLng(intent.getDoubleExtra("driverLatitude", 0), intent.getDoubleExtra("driverLongitude", 0));
+                LatLng requestLocation = new LatLng(intent.getDoubleExtra("riderLatitude", 0), intent.getDoubleExtra("riderLongitude", 0));
 
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for (Marker marker : markers) {
-            builder.include(marker.getPosition());
-        }
-        LatLngBounds bounds = builder.build();
+                ArrayList<Marker> markers = new ArrayList<>();
+                markers.add(mMap.addMarker(new MarkerOptions().position(driverLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))));
+                markers.add(mMap.addMarker(new MarkerOptions().position(requestLocation).title("Request Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))));
 
-        int padding = 50; // offset from edges of the map in pixels
-        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-        mMap.animateCamera(cu);
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                for (Marker marker : markers) {
+                    builder.include(marker.getPosition());
+                }
+                LatLngBounds bounds = builder.build();
+
+                int padding = 100; // offset from edges of the map in pixels
+                CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                mMap.animateCamera(cu);
+            }
+        });
 
     }
 

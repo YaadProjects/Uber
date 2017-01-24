@@ -83,6 +83,7 @@ public class ViewRequestActivity extends AppCompatActivity implements LocationLi
                                 ParseGeoPoint riderRequestLocations = (ParseGeoPoint) object.get("location");
 
                                 if (riderRequestLocations !=null) {
+
                                     Double distanceInMiles = geoPointLocation.distanceInMilesTo(riderRequestLocations);
 
                                     //Rounding to one decimal place

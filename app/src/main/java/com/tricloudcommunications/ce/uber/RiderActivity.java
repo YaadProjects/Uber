@@ -34,11 +34,13 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseSession;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import java.io.IOException;
@@ -103,7 +105,7 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
 
                                     Double distanceInMiles = driverCurrentLocation.distanceInMilesTo(riderCurrentLocztion);
 
-                                    if (distanceInMiles < 0.01){
+                                    if (distanceInMiles <= 0.02){
 
                                         riderInfoTextView.setText("Your Driver is Here!");
                                         callUberButton.setVisibility(View.VISIBLE);
@@ -382,7 +384,6 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
         }
         location = locationManager.getLastKnownLocation(provider);
 
-
         //Check to see if a request has been put for the current user
         ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("Request");
         query.whereEqualTo("username", ParseUser.getCurrentUser().getUsername());
@@ -423,7 +424,8 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
         mMap = googleMap;
         //mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 
-        checkForUpdates();
+
+       checkForUpdates();
 
         /**
         // Add a marker in Sydney and move the camera

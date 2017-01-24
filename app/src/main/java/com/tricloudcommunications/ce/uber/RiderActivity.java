@@ -103,7 +103,7 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
 
                                     Double distanceInMiles = driverCurrentLocation.distanceInMilesTo(riderCurrentLocztion);
 
-                                    if (distanceInMiles < 0.01){
+                                    if (distanceInMiles <= 0.02){
 
                                         riderInfoTextView.setText("Your Driver is Here!");
                                         callUberButton.setVisibility(View.VISIBLE);

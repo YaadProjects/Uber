@@ -21,6 +21,7 @@ import com.parse.LogInCallback;
 import com.parse.ParseAnalytics;
 import com.parse.ParseAnonymousUtils;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseSession;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
@@ -119,25 +120,32 @@ public class MainActivity extends AppCompatActivity {
 
                     if (e == null){
 
-                        if (ParseUser.getCurrentUser().get("userType") != null){
+                        //mainLayout.setVisibility(View.VISIBLE);
+                        Log.i("Info", "No errors from Parse Session " + ParseUser.getCurrentUser().getUsername());
+
+                        if (ParseUser.getCurrentUser().getString("userType") != null){
 
                             redirectActivity();
-                            Log.i("Info", "Already Logged in Redirecting as: " + ParseUser.getCurrentUser().get("userType"));
+                            Log.i("Info", "User Name after Session Check " + ParseUser.getCurrentUser().getUsername());
+
+                        }else {
+
+                            mainLayout.setVisibility(View.VISIBLE);
+                            Log.i("Info", "Already Logged in But User Type not selected ");
                         }
 
                     }else{
 
                         mainLayout.setVisibility(View.VISIBLE);
-                        Toast.makeText(getApplicationContext(), "Please select Rider or Driver and click Get Started", Toast.LENGTH_LONG).show();
+                        Log.i("Info", "Already Logged in But User Type not selected ");
                     }
 
                 }
             });
 
-            /*
+            /**
             if (ParseUser.getCurrentUser().get("userType") != null){
 
-                //ParseUser.logOut();
                 //redirectActivity();
                 //Check that the current User has a valid and session Token
                 Log.i("Info", "Already Logged in Redirecting as: " + ParseUser.getCurrentUser().get("userType"));

@@ -13,7 +13,6 @@
         android:layout_marginEnd="21dp"
         android:layout_marginBottom="45dp"
         android:id="@+id/callUberButton"
-        android:onClick="callUber"
         android:textSize="24sp"
         android:textAllCaps="false"
         android:layout_alignParentBottom="true"
@@ -28,8 +27,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="10dp"
-        android:textSize="18sp"
-        android:onClick="riderLogOut" />
+        android:textSize="18sp" />
 
     <TextView
         android:layout_width="wrap_content"

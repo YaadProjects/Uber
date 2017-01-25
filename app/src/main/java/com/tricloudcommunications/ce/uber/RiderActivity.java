@@ -63,65 +63,47 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
     Boolean isDriverActive = false;
     Handler handler;
 
-    public void checkForUpdates(){
+    public void checkForUpdates() {
 
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Request");
-        query.whereEqualTo("username", ParseUser.getCurrentUser().getUsername());
-        query.whereNotEqualTo("driverUsername", "");
+            ParseQuery<ParseObject> query = ParseQuery.getQuery("Request");
+            query.whereEqualTo("username", ParseUser.getCurrentUser().getUsername());
+            query.whereNotEqualTo("driverUsername", "");
 
-        query.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> objects, ParseException e) {
+            query.findInBackground(new FindCallback<ParseObject>() {
+                @Override
+                public void done(List<ParseObject> objects, ParseException e) {
 
-                if (e == null && objects.size() > 0){
+                    if (e == null && objects.size() > 0) {
 
-                    isDriverActive = true;
+                        isDriverActive = true;
 
-                    ParseQuery<ParseUser> getDriverLocationQuery = ParseUser.getQuery();
-                    getDriverLocationQuery.whereEqualTo("username", objects.get(0).getString("driverUsername"));
-                    getDriverLocationQuery.findInBackground(new FindCallback<ParseUser>() {
-                        @Override
-                        public void done(List<ParseUser> objects, ParseException e) {
+                        ParseQuery<ParseUser> getDriverLocationQuery = ParseUser.getQuery();
+                        getDriverLocationQuery.whereEqualTo("username", objects.get(0).getString("driverUsername"));
+                        getDriverLocationQuery.findInBackground(new FindCallback<ParseUser>() {
+                            @Override
+                            public void done(List<ParseUser> objects, ParseException e) {
 
-                            if (ActivityCompat.checkSelfPermission(RiderActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(RiderActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                                // TODO: Consider calling
-                                //    ActivityCompat#requestPermissions
-                                // here to request the missing permissions, and then overriding
-                                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                //                                          int[] grantResults)
-                                // to handle the case where the user grants the permission. See the documentation
-                                // for ActivityCompat#requestPermissions for more details.
-                                return;
-                            }
-                            location = locationManager.getLastKnownLocation(provider);
+                                if (ActivityCompat.checkSelfPermission(RiderActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(RiderActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                                    // TODO: Consider calling
+                                    //    ActivityCompat#requestPermissions
+                                    // here to request the missing permissions, and then overriding
+                                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                    //                                          int[] grantResults)
+                                    // to handle the case where the user grants the permission. See the documentation
+                                    // for ActivityCompat#requestPermissions for more details.
+                                    return;
+                                }
+                                location = locationManager.getLastKnownLocation(provider);
 
-                            if (e == null && objects.size() > 0){
+                                if (e == null && objects.size() > 0) {
 
-                                ParseGeoPoint driverCurrentLocation = objects.get(0).getParseGeoPoint("location");
+                                    ParseGeoPoint driverCurrentLocation = objects.get(0).getParseGeoPoint("location");
 
-                                if (location != null){
+                                    if (location != null) {
 
-                                    ParseGeoPoint riderCurrentLocztion = new ParseGeoPoint(location.getLatitude(), location.getLongitude());
-
-                                    Double distanceInMiles = driverCurrentLocation.distanceInMilesTo(riderCurrentLocztion);
-
-                                    if (distanceInMiles <= 0.02){
-
-                                        riderInfoTextView.setText("Your Driver is Here!");
-                                        callUberButton.setVisibility(View.VISIBLE);
-                                        riderLogOutButton.setVisibility(View.VISIBLE);
-                                        //requestActive = false;
-                                        //isDriverActive = false;
-
-
-                                    }else {
-                                        //Rounding to one decimal place
-                                        Double distanceOneDP = (double) Math.round(distanceInMiles * 10) / 10;
-
-                                        riderInfoTextView.setText("Your driver is " + distanceOneDP.toString() + " miles away!");
+                                        ParseGeoPoint riderCurrentLocztion = new ParseGeoPoint(location.getLatitude(), location.getLongitude());
 
                                         //Update driver location on the map so rider can see the driver location
-
                                         LatLng driverOnMapLocation = new LatLng(driverCurrentLocation.getLatitude(), driverCurrentLocation.getLongitude());
                                         LatLng riderOnMapLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
@@ -139,79 +121,126 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
                                         int padding = 100; // offset from edges of the map in pixels
                                         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
                                         mMap.animateCamera(cu);
+
+                                        Double distanceInMiles = driverCurrentLocation.distanceInMilesTo(riderCurrentLocztion);
+
+                                        //Rounding to one decimal place
+                                        Double distanceOneDP = (double) Math.round(distanceInMiles * 10) / 10;
+
+                                        if (distanceInMiles <= 0.01) {
+                                            riderInfoTextView.setText("Your driver is " + distanceOneDP.toString() + " miles away!");
+                                            callUberButton.setVisibility(View.INVISIBLE);
+                                            riderLogOutButton.setVisibility(View.INVISIBLE);
+                                        }else {
+                                            //mMap.clear();
+
+                                            Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+
+                                            try {
+
+                                                List<android.location.Address> addressList = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+
+                                                if (addressList != null && addressList.size() > 0) {
+
+                                                    //Sources: https://developers.google.com/maps/documentation/android-api/views
+                                                    //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 0));
+                                                    //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng), 18));
+                                                    //LatLngBounds is needed to avoid have partial map show instead of complete map
+
+                                                    LatLngBounds latLngBounds = new LatLngBounds(new LatLng(location.getLatitude(), location.getLongitude()), new LatLng(location.getLatitude(), location.getLongitude()));
+                                                    mMap.clear();
+                                                    mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title(addressList.get(0).getAddressLine(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                                                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 15));
+                                                    mMap.addCircle(new CircleOptions().center(new LatLng(location.getLatitude(), location.getLongitude())).radius(10).strokeColor(Color.RED).fillColor(Color.BLUE));
+
+                                                    Log.i("Address Main Info", addressList.toString());
+                                                    Log.i("Address Info 0", addressList.get(0).getAddressLine(0));
+                                                    Log.i("Address Info 1", addressList.get(0).getAddressLine(1));
+                                                    Log.i("Address Info 2", addressList.get(0).getAddressLine(2));
+
+                                                }
+
+                                            } catch (IOException error) {
+
+                                                error.printStackTrace();
+
+                                            }
+
+                                            riderInfoTextView.setText("Your driver is here!");
+                                            callUberButton.setVisibility(View.VISIBLE);
+                                            riderLogOutButton.setVisibility(View.VISIBLE);
+
+                                        }
                                     }
 
-                                    callUberButton.setVisibility(View.INVISIBLE);
-                                    riderLogOutButton.setVisibility(View.INVISIBLE);
 
                                 }
                             }
+                        });
+                    } else {
+
+                        isDriverActive = false;
+                        riderInfoTextView.setText("");
+                        callUberButton.setVisibility(View.VISIBLE);
+                        riderLogOutButton.setVisibility(View.VISIBLE);
+
+                        //Toast.makeText(getApplicationContext(), "Waiting for a Driver", Toast.LENGTH_LONG).show();
+
+                        Double lat = location.getLatitude();
+                        Double lng = location.getLongitude();
+
+                        LatLngBounds latLngBounds = new LatLngBounds(new LatLng(lat, lng), new LatLng(lat, lng));
+
+                        Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+
+                        try {
+
+                            List<android.location.Address> addressList = geocoder.getFromLocation(lat, lng, 1);
+
+                            if (addressList != null && addressList.size() > 0) {
+
+                                //Sources: https://developers.google.com/maps/documentation/android-api/views
+                                //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 0));
+                                //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng), 18));
+                                //LatLngBounds is needed to avoid have partial map show instead of complete map
+
+                                mMap.clear();
+                                mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(addressList.get(0).getAddressLine(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 15));
+                                mMap.addCircle(new CircleOptions().center(new LatLng(lat, lng)).radius(10).strokeColor(Color.RED).fillColor(Color.BLUE));
+
+                                Log.i("Address Main Info", addressList.toString());
+                                Log.i("Address Info 0", addressList.get(0).getAddressLine(0));
+                                Log.i("Address Info 1", addressList.get(0).getAddressLine(1));
+                                Log.i("Address Info 2", addressList.get(0).getAddressLine(2));
+
+                            }
+
+                        } catch (IOException error) {
+
+                            error.printStackTrace();
+
                         }
-                    });
-                }else {
 
-                    isDriverActive = false;
-                    riderInfoTextView.setText("");
-                    callUberButton.setVisibility(View.VISIBLE);
-                    riderLogOutButton.setVisibility(View.VISIBLE);
-
-                    //Toast.makeText(getApplicationContext(), "Waiting for a Driver", Toast.LENGTH_LONG).show();
-
-                    Double lat = location.getLatitude();
-                    Double lng = location.getLongitude();
-
-                    LatLngBounds latLngBounds = new LatLngBounds(new LatLng(lat, lng), new LatLng(lat, lng));
-
-                    Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-
-                    try {
-
-                        List<android.location.Address> addressList = geocoder.getFromLocation(lat, lng, 1);
-
-                        if (addressList != null && addressList.size() > 0) {
-
-                            //Sources: https://developers.google.com/maps/documentation/android-api/views
-                            //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 0));
-                            //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng), 18));
-                            //LatLngBounds is needed to avoid have partial map show instead of complete map
-
-                            mMap.clear();
-                            mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(addressList.get(0).getAddressLine(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 15));
-                            mMap.addCircle(new CircleOptions().center(new LatLng(lat, lng)).radius(10).strokeColor(Color.RED).fillColor(Color.BLUE));
-
-                            Log.i("Address Main Info", addressList.toString());
-                            Log.i("Address Info 0", addressList.get(0).getAddressLine(0));
-                            Log.i("Address Info 1", addressList.get(0).getAddressLine(1));
-                            Log.i("Address Info 2", addressList.get(0).getAddressLine(2));
-
-                        }
-
-                    } catch (IOException error) {
-
-                        error.printStackTrace();
-
+                        Log.i("Latitude", lat.toString());
+                        Log.i("Longitude", lng.toString());
                     }
 
-                    Log.i("Latitude", lat.toString());
-                    Log.i("Longitude", lng.toString());
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            checkForUpdates();
+
+                        }
+                    }, 2000);
                 }
 
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
+            });
 
-                        checkForUpdates();
-
-                    }
-                }, 2000);
-            }
-
-        });
-        
     }
 
-    public void riderLogOut(View view){
+    public void riderLogOut(){
 
         //Check to see if a request has been put for the current user and delete the request
         ParseQuery<ParseObject> queryRequest = new ParseQuery<ParseObject>("Request");
@@ -247,6 +276,11 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
 
                     if (objects.size() > 0){
 
+                        ParseUser.logOut();
+                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                        startActivity(intent);
+
+                        /**
                         for (ParseObject object : objects){
 
                             object.deleteInBackground(new DeleteCallback() {
@@ -266,6 +300,7 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
                                 }
                             });
                         }
+                        **/
                     }
 
                 }else {
@@ -277,7 +312,7 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
 
     }
 
-    public void callUber(View view){
+    public void callUber(){
 
         Log.i("Info", "Call Uber");
 
@@ -368,6 +403,25 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
         riderLogOutButton = (Button) findViewById(R.id.riderLogOutButton);
         riderInfoTextView = (TextView) findViewById(R.id.infoTextView);
         handler = new Handler();
+
+        riderLogOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                riderLogOut();
+
+            }
+        });
+
+        callUberButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                callUber();
+
+            }
+        });
+
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         provider = locationManager.getBestProvider(new Criteria(), false);

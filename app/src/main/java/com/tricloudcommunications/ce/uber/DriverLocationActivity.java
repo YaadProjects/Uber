@@ -121,10 +121,11 @@ public class DriverLocationActivity extends FragmentActivity implements OnMapRea
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+
+        //Source: http://stackoverflow.com/questions/14828217/android-map-v2-zoom-to-show-all-the-markers/14828739#14828739
         mapLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                //and write code, which you can see in answer above
 
                 LatLng driverLocation = new LatLng(intent.getDoubleExtra("driverLatitude", 0), intent.getDoubleExtra("driverLongitude", 0));
                 LatLng requestLocation = new LatLng(intent.getDoubleExtra("riderLatitude", 0), intent.getDoubleExtra("riderLongitude", 0));

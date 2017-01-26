@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
                     }else{
 
                         mainLayout.setVisibility(View.VISIBLE);
-                        Log.i("Info", "Already Logged in But User Type not selected ");
+                        Log.i("Info", "Already Logged in But User Session Error. ");
                     }
 
                 }

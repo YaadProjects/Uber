@@ -101,7 +101,7 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
 
                                     if (location != null) {
 
-                                        ParseGeoPoint riderCurrentLocztion = new ParseGeoPoint(location.getLatitude(), location.getLongitude());
+                                        ParseGeoPoint riderCurrentLocation = new ParseGeoPoint(location.getLatitude(), location.getLongitude());
 
                                         //Update driver location on the map so rider can see the driver location
                                         LatLng driverOnMapLocation = new LatLng(driverCurrentLocation.getLatitude(), driverCurrentLocation.getLongitude());
@@ -122,58 +122,63 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
                                         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
                                         mMap.animateCamera(cu);
 
-                                        Double distanceInMiles = driverCurrentLocation.distanceInMilesTo(riderCurrentLocztion);
+                                        Double distanceInMiles = driverCurrentLocation.distanceInMilesTo(riderCurrentLocation);
 
                                         //Rounding to one decimal place
                                         Double distanceOneDP = (double) Math.round(distanceInMiles * 10) / 10;
 
-                                        if (distanceInMiles <= 0.01) {
-                                            riderInfoTextView.setText("Your driver is " + distanceOneDP.toString() + " miles away!");
+                                        riderInfoTextView.setText("Your driver is " + distanceOneDP.toString() + " miles away!");
+
+                                        if (distanceInMiles > 0.1) {
+
                                             callUberButton.setVisibility(View.INVISIBLE);
                                             riderLogOutButton.setVisibility(View.INVISIBLE);
-                                        }else {
-                                            //mMap.clear();
 
-                                            Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+                                            handler.postDelayed(new Runnable() {
+                                                @Override
+                                                public void run() {
 
-                                            try {
-
-                                                List<android.location.Address> addressList = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-
-                                                if (addressList != null && addressList.size() > 0) {
-
-                                                    //Sources: https://developers.google.com/maps/documentation/android-api/views
-                                                    //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 0));
-                                                    //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng), 18));
-                                                    //LatLngBounds is needed to avoid have partial map show instead of complete map
-
-                                                    LatLngBounds latLngBounds = new LatLngBounds(new LatLng(location.getLatitude(), location.getLongitude()), new LatLng(location.getLatitude(), location.getLongitude()));
-                                                    mMap.clear();
-                                                    mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title(addressList.get(0).getAddressLine(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-                                                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 15));
-                                                    mMap.addCircle(new CircleOptions().center(new LatLng(location.getLatitude(), location.getLongitude())).radius(10).strokeColor(Color.RED).fillColor(Color.BLUE));
-
-                                                    Log.i("Address Main Info", addressList.toString());
-                                                    Log.i("Address Info 0", addressList.get(0).getAddressLine(0));
-                                                    Log.i("Address Info 1", addressList.get(0).getAddressLine(1));
-                                                    Log.i("Address Info 2", addressList.get(0).getAddressLine(2));
+                                                    checkForUpdates();
 
                                                 }
+                                            }, 2000);
 
-                                            } catch (IOException error) {
+                                        }else {
 
-                                                error.printStackTrace();
+                                            //Delete the rider Request from Parse
+                                            //Look for the request that has been put in for the current rider and delete the request
+                                            ParseQuery<ParseObject> queryRequest = new ParseQuery<ParseObject>("Request");
+                                            queryRequest.whereEqualTo("username", ParseUser.getCurrentUser().getUsername());
+                                            queryRequest.findInBackground(new FindCallback<ParseObject>() {
+                                                @Override
+                                                public void done(List<ParseObject> objects, ParseException e) {
 
-                                            }
+                                                    if (e == null){
 
+                                                        if (objects.size() >0){
+
+                                                            for (ParseObject object : objects){
+
+                                                                object.deleteInBackground();
+                                                            }
+                                                        }
+                                                    }else {
+
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+                                            });
+
+                                            requestActive = false;
+                                            isDriverActive = false;
                                             riderInfoTextView.setText("Your driver is here!");
+                                            callUberButton.setText("Call An Uber");
                                             callUberButton.setVisibility(View.VISIBLE);
                                             riderLogOutButton.setVisibility(View.VISIBLE);
 
+                                            rideIsOver();
                                         }
                                     }
-
-
                                 }
                             }
                         });
@@ -226,17 +231,66 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
                         Log.i("Longitude", lng.toString());
                     }
 
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            checkForUpdates();
-
-                        }
-                    }, 2000);
                 }
 
             });
+
+    }
+
+    public void rideIsOver(){
+
+        if (ActivityCompat.checkSelfPermission(RiderActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(RiderActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        location = locationManager.getLastKnownLocation(provider);
+
+        Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+
+        try {
+
+            List<android.location.Address> addressList = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+
+            if (addressList != null && addressList.size() > 0) {
+
+                //Sources: https://developers.google.com/maps/documentation/android-api/views
+                //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 0));
+                //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng), 18));
+                //LatLngBounds is needed to avoid have partial map show instead of complete map
+
+                LatLngBounds latLngBounds = new LatLngBounds(new LatLng(location.getLatitude(), location.getLongitude()), new LatLng(location.getLatitude(), location.getLongitude()));
+                mMap.clear();
+                mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title(addressList.get(0).getAddressLine(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 15));
+                mMap.addCircle(new CircleOptions().center(new LatLng(location.getLatitude(), location.getLongitude())).radius(10).strokeColor(Color.RED).fillColor(Color.BLUE));
+
+                Log.i("Address Main Info", addressList.toString());
+                Log.i("Address Info 0", addressList.get(0).getAddressLine(0));
+                Log.i("Address Info 1", addressList.get(0).getAddressLine(1));
+                Log.i("Address Info 2", addressList.get(0).getAddressLine(2));
+
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        rideIsOver();
+                    }
+                }, 2000);
+
+
+            }
+
+        } catch (IOException error) {
+
+            error.printStackTrace();
+
+        }
 
     }
 
@@ -280,7 +334,6 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
                         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                         startActivity(intent);
 
-                        /**
                         for (ParseObject object : objects){
 
                             object.deleteInBackground(new DeleteCallback() {
@@ -300,7 +353,6 @@ public class RiderActivity extends FragmentActivity implements OnMapReadyCallbac
                                 }
                             });
                         }
-                        **/
                     }
 
                 }else {

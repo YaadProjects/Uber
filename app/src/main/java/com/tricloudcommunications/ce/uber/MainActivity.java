@@ -114,6 +114,21 @@ public class MainActivity extends AppCompatActivity {
             });
         }else {
 
+            if (ParseUser.getCurrentUser().get("userType") != null){
+
+                redirectActivity();
+                Log.i("Info", "Already Logged in Redirecting as: " + ParseUser.getCurrentUser().get("userType"));
+                Log.i("Info", "Already Logged in session Token: " + ParseUser.getCurrentUser().getSessionToken());
+            }else {
+
+                mainLayout.setVisibility(View.VISIBLE);
+                Log.i("Info", "Already Logged in But User Type not selected ");
+            }
+
+            /**
+             *
+             //Check that the current User has a valid and session Token for testing and dev purposes only.
+             //Aloiws dev to delete the session with out deleteing user
             ParseSession.getCurrentSessionInBackground(new GetCallback<ParseSession>() {
                 @Override
                 public void done(ParseSession object, ParseException e) {
@@ -143,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            /**
+
             if (ParseUser.getCurrentUser().get("userType") != null){
 
                 //redirectActivity();
@@ -151,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("Info", "Already Logged in Redirecting as: " + ParseUser.getCurrentUser().get("userType"));
                 Log.i("Info", "Already Logged in session Token: " + ParseUser.getCurrentUser().getSessionToken());
             }
-            */
+            **/
 
         }
 
